@@ -1,7 +1,8 @@
+from typing import Optional
+
 import math
 from collections import deque
 from dataclasses import dataclass
-from typing import Optional
 
 # GLOBAL VARIABLE
 # ME = me flag
