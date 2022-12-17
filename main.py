@@ -1,8 +1,15 @@
+import math
 from dataclasses import dataclass
 
+# GLOBAL VARIABLE
+# ME = me flag
+# OPP = opp flag
+# NONE = neutral flag
 ME = 1
 OPP = 0
 NONE = -1
+
+# INITALIZE TILE CLASS
 
 
 @dataclass
@@ -16,6 +23,17 @@ class Tile:
     can_build: bool
     can_spawn: bool
     in_range_of_recycler: bool
+
+
+# CUSTOM FUNCTION
+
+
+def get_distance(Tile1: Tile, Tile2: Tile) -> float:
+    a = Tile1.x - Tile2.x  # length of a
+    b = Tile1.y - Tile2.y  # length of b
+
+    c = math.sqrt((a * a) + (b * b))  # ROOT (a * a) + (b * b)
+    return c
 
 
 width, height = [int(i) for i in input().split()]
