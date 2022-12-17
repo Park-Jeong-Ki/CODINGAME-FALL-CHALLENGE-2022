@@ -12,6 +12,8 @@ ME = 1
 OPP = 0
 NONE = -1
 DIRS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+TRUN = 0
+INIT_DEVELOPER = 0
 
 # INITALIZE WIDTH & HEIGHT
 W, H = [int(i) for i in input().split()]
@@ -109,8 +111,22 @@ def get_distance(Tile1: Tile, Tile2: Tile) -> float:
     return c
 
 
+
+def get_total_matter_when_build(tile) -> int:
+    ret = tile.scrap_amount
+    for dx, dy in DIRS:
+        nx, ny = tile.x + dx, tile.y + dy
+        if not (0 <= nx < W and 0 <= ny < H):
+            continue
+        ntile = tiles[ny][nx]
+        if ntile.recycler:
+            return 0  # 겹쳐서 설치하면 효율 떨어짐
+        ret += min(ntile.scrap_amount, tile.scrap_amount)
+    return ret
+
 # game loop
 while True:
+    TURN +=1
     tiles = []
     my_units = []
     opp_units = []
@@ -162,14 +178,23 @@ while True:
 
     actions = []
 
-    # tile이 [y][x]순으로 돌아오기 때문에
+    # tile이 [y][x]순으로 들어옴 
+    # 1, 2, 3, 4, ...
+    # 5, 6, 7, 8, ...
     for tile in my_tiles:
         if tile.can_spawn:
-            amount = int((my_matter // 10) / 2) # TODO: pick amount of robots to spawn here
+            amount = 1
+            # TODO: spawn은 상대방 unit과 가깝게 만들어야 함.
+            # spawn 할때는 뭉치게 만드는게 오바임
+            # spawn은 일단 한게씩 
             if amount > 0:
                 actions.append("SPAWN {} {} {}".format(amount, tile.x, tile.y))
         if tile.can_build:
-            should_build = False  # TODO: pick whether to build recycler here
+            if get_total_matter_when_build(tile) > 35 and TURN <= 3 and INIT_DEVELOPER <= 2:
+                INIT_DEVELOPER += 1
+                should_build = True
+            else:
+                should_build = False  # TODO: pick whether to build recycler here
             if should_build:
                 actions.append("BUILD {} {}".format(tile.x, tile.y))
 
