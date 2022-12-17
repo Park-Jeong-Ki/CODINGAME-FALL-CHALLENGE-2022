@@ -1,5 +1,3 @@
-import sys
-import math
 from dataclasses import dataclass
 
 ME = 1
