@@ -73,6 +73,32 @@ def get_nearest_opp_unit(tile: Tile) -> Optional[Tile]:
             q.append((nx, ny))
     return None
 
+def get_nearest_neutral_unit(tile: Tile) -> Optional[Tile]:
+    visited = [[False] * W for _ in range(H)]
+    visited[tile.y][tile.x] = True
+    q = deque([(tile.x, tile.y)])
+    while q:
+        x, y = q.popleft()
+        for dx, dy in DIRS:
+            nx, ny = x + dx, y + dy
+            # 바운더리 벗어남
+            if not (0 <= nx < W and 0 <= ny < H):
+                continue
+            # 이미 다른데서 먼저 들어감 (중복 방지)
+            if visited[ny][nx]:
+                continue
+            ntile = tiles[ny][nx]
+            # 만약 넥스트 타일이 못가는 곳이면
+            if is_unmovable(ntile):
+                continue
+            # 넥스트 타일에 갔으니까 visited로 해주고
+            visited[ny][nx] = True
+            # 넥스트타일이 상대방 땅 + 유닛이 있으면
+            if ntile.owner == NONE:
+                return ntile
+            q.append((nx, ny))
+    return None
+
 
 # 사실상 못가는거리를 재는 함수이므로 필요 X...
 def get_distance(Tile1: Tile, Tile2: Tile) -> float:
@@ -139,7 +165,7 @@ while True:
     # tile이 [y][x]순으로 돌아오기 때문에
     for tile in my_tiles:
         if tile.can_spawn:
-            amount = 0  # TODO: pick amount of robots to spawn here
+            amount = int((my_matter // 10) / 2) # TODO: pick amount of robots to spawn here
             if amount > 0:
                 actions.append("SPAWN {} {} {}".format(amount, tile.x, tile.y))
         if tile.can_build:
@@ -147,8 +173,11 @@ while True:
             if should_build:
                 actions.append("BUILD {} {}".format(tile.x, tile.y))
 
-    for tile in my_units:
-        target = None  # TODO: pick a destination tile
+    for idx, tile in enumerate(my_units):
+        if idx % 3 == 0 or idx % 3 == 1:
+            target = get_nearest_opp_unit(tile)
+        elif idx % 2 == 2:
+            target = get_nearest_neutral_unit(tile)
         if target:
             amount = 0  # TODO: pick amount of units to move
             actions.append("MOVE {} {} {} {} {}".format(amount, tile.x, tile.y, target.x, target.y))
